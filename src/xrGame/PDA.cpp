@@ -215,8 +215,6 @@ void CPda::PlayScriptFunction()
 {
     if (xr_strcmp(m_functor_str, ""))
     {
-        luabind::functor<void> m_functor;
-        R_ASSERT(GEnv.ScriptEngine->functor(m_functor_str.c_str(), m_functor));
-        m_functor();
+        GEnv.ScriptEngine->CallLuaFunction<void>(DEBUG_INFO, m_functor_str.c_str());
     }
 }

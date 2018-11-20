@@ -18,10 +18,10 @@ extern ENGINE_API BOOL bShowPauseString;
 
 void CallFunction(shared_str const& func)
 {
-    luabind::functor<void> functor_to_call;
-    bool functor_exists = GEnv.ScriptEngine->functor(func.c_str(), functor_to_call);
+    sol::functor<void> functor_to_call;
+    bool functor_exists = GEnv.ScriptEngine->InitFunctor(func.c_str(), functor_to_call);
     THROW3(functor_exists, "Cannot find script function described in tutorial item ", func.c_str());
-    if (functor_to_call.is_valid())
+    if (functor_to_call.valid())
         functor_to_call();
 }
 
@@ -73,7 +73,7 @@ bool CUISequenceItem::AllowKey(int dik)
 
 void CUISequenceItem::Update()
 {
-    if (m_onframe_functor.is_valid())
+    if (m_onframe_functor.valid())
         m_onframe_functor(current_factor());
 }
 
@@ -82,7 +82,7 @@ void CUISequenceItem::Start()
     CallFunctions(m_start_lua_functions);
     if (m_onframe_lua_function.size())
     {
-        bool functor_exists = GEnv.ScriptEngine->functor(m_onframe_lua_function.c_str(), m_onframe_functor);
+        bool functor_exists = GEnv.ScriptEngine->InitFunctor(m_onframe_lua_function.c_str(), m_onframe_functor);
         THROW3(
             functor_exists, "Cannot find script function described in tutorial item ", m_onframe_lua_function.c_str());
     }
@@ -195,17 +195,17 @@ CUISequenceItem* CUISequencer::GetNextItem()
 
     while (m_sequencer_items.size())
     {
-        luabind::functor<bool> functor_to_call;
+        sol::functor<bool> functor_to_call;
         result = m_sequencer_items.front();
         shared_str const f = result->m_check_lua_function;
         if (f.size() == 0)
             break;
 
-        bool functor_exists = GEnv.ScriptEngine->functor(f.c_str(), functor_to_call);
+        bool functor_exists = GEnv.ScriptEngine->InitFunctor(f.c_str(), functor_to_call);
         THROW3(functor_exists, "Cannot find script function described in tutorial item ", f.c_str());
 
         bool call_result = true;
-        if (functor_to_call.is_valid())
+        if (functor_to_call.valid())
             call_result = functor_to_call();
 
         if (!call_result)

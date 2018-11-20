@@ -85,6 +85,7 @@
         $(xrExternals)luajit\src;
         $(xrExternals)luabind;
         $(xrExternals)GameSpy\src;
+        $(xrExternals)sol2;
         %(AdditionalIncludeDirectories)
       </AdditionalIncludeDirectories>
       <!-- MultiProcessorCompilation don't compatible with LinkIncremental and UseDebugLibraries -->

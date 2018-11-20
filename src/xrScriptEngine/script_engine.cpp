@@ -458,10 +458,8 @@ bool CScriptEngine::do_file(LPCSTR caScriptName, LPCSTR caNameSpaceName)
     FS.r_close(l_tpFileReader);
     int errFuncId = -1;
 #ifdef USE_DEBUGGER
-#ifndef USE_LUA_STUDIO
     if (debugger())
         errFuncId = debugger()->PrepareLua(lua());
-#endif
 #endif
     if (0) //.
     {
@@ -473,10 +471,8 @@ bool CScriptEngine::do_file(LPCSTR caScriptName, LPCSTR caNameSpaceName)
     int l_iErrorCode = lua_pcall(lua(), 0, 0, (-1 == errFuncId) ? 0 : errFuncId); // new_Andy
 // luaJIT_setmode(lua(), 0, LUAJIT_MODE_ENGINE|LUAJIT_MODE_ON); // Oles
 #ifdef USE_DEBUGGER
-#ifndef USE_LUA_STUDIO
     if (debugger())
         debugger()->UnPrepareLua(lua(), errFuncId);
-#endif
 #endif
     if (l_iErrorCode)
     {
@@ -620,7 +616,7 @@ struct raii_guard : private Noncopyable
     ~raii_guard()
     {
 #ifdef DEBUG
-        const bool lua_studio_connected = !!m_script_engine->debugger();
+        const bool lua_studio_connected = false; //!!m_script_engine->debugger();
         if (!lua_studio_connected)
 #endif
         {
@@ -657,7 +653,7 @@ bool CScriptEngine::print_output(lua_State* L, pcstr caScriptFileName, int error
     if (!xr_strcmp(S, "cannot resume dead coroutine"))
     {
         VERIFY2("Please do not return any values from main!!!", caScriptFileName);
-#if defined(USE_DEBUGGER) && !defined(USE_LUA_STUDIO)
+#if defined(USE_DEBUGGER)
         if (debugger() && debugger()->Active())
         {
             debugger()->Write(S);
@@ -670,7 +666,7 @@ bool CScriptEngine::print_output(lua_State* L, pcstr caScriptFileName, int error
         if (!errorCode)
             scriptEngine->script_log(LuaMessageType::Info, "Output from %s", caScriptFileName);
         // scriptEngine->script_log(errorCode ? LuaMessageType::Error : LuaMessageType::Message, "%s", S);
-#if defined(USE_DEBUGGER) && !defined(USE_LUA_STUDIO)
+#if defined(USE_DEBUGGER)
         if (debugger() && debugger()->Active())
         {
             debugger()->Write(S);
@@ -735,84 +731,7 @@ int CScriptEngine::error_log(LPCSTR format, ...)
 }
 
 #ifdef USE_DEBUGGER
-#ifndef USE_LUA_STUDIO
 #include "script_debugger.hpp"
-#else
-#include "LuaStudio/LuaStudio.hpp"
-typedef cs::lua_studio::create_world_function_type create_world_function_type;
-typedef cs::lua_studio::destroy_world_function_type destroy_world_function_type;
-static create_world_function_type s_create_world = nullptr;
-static destroy_world_function_type s_destroy_world = nullptr;
-static LogCallback s_old_log_callback = nullptr;
-#endif
-#endif
-
-#if defined(USE_DEBUGGER) && defined(USE_LUA_STUDIO)
-static void log_callback(void* context, const char* message)
-{
-    if (s_old_log_callback)
-        s_old_log_callback(message);
-    CScriptEngine* scriptEngine = (CScriptEngine*)context;
-    if (!scriptEngine->debugger())
-        return;
-    scriptEngine->debugger()->add_log_line(message);
-}
-
-void CScriptEngine::initialize_lua_studio(lua_State* state, cs::lua_studio::world*& world, lua_studio_engine*& engine)
-{
-    engine = 0;
-    world = 0;
-    u32 const old_error_mode = SetErrorMode(SEM_FAILCRITICALERRORS);
-
-    const auto s_script_debugger_module = XRay::LoadModule(CS_LUA_STUDIO_BACKEND_FILE_NAME);
-    SetErrorMode(old_error_mode);
-    if (!s_script_debugger_module->IsLoaded())
-    {
-        Msg("! cannot load %s dynamic library", CS_LUA_STUDIO_BACKEND_FILE_NAME);
-        return;
-    }
-
-    s_create_world = 
-        (create_world_function_type)s_script_debugger_module->GetProcAddress("_cs_lua_studio_backend_create_world@12");
-    R_ASSERT2(s_create_world, "can't find function \"cs_lua_studio_backend_create_world\"");
-
-    s_destroy_world = 
-        (destroy_world_function_type)s_script_debugger_module->GetProcAddress("_cs_lua_studio_backend_destroy_world@4");
-    R_ASSERT2(s_destroy_world, "can't find function \"cs_lua_studio_backend_destroy_world\" in the library");
-
-    engine = new lua_studio_engine();
-    world = s_create_world(*engine, false, false);
-    VERIFY(world);
-
-    s_old_log_callback = SetLogCB(LogCallback(log_callback, this));
-    RunJITCommand(state, "off()");
-    world->add(state);
-}
-
-void CScriptEngine::finalize_lua_studio(lua_State* state, cs::lua_studio::world*& world, lua_studio_engine*& engine)
-{
-    world->remove(state);
-    VERIFY(world);
-    s_destroy_world(world);
-    world = nullptr;
-    VERIFY(engine);
-    xr_delete(engine);
-    SetLogCB(s_old_log_callback);
-}
-
-void CScriptEngine::try_connect_to_debugger()
-{
-    if (m_lua_studio_world)
-        return;
-    initialize_lua_studio(lua(), m_lua_studio_world, m_lua_studio_engine);
-}
-
-void CScriptEngine::disconnect_from_debugger()
-{
-    if (!m_lua_studio_world)
-        return;
-    finalize_lua_studio(lua(), m_lua_studio_world, m_lua_studio_engine);
-}
 #endif
 
 CScriptEngine::CScriptEngine(bool is_editor)
@@ -827,14 +746,9 @@ CScriptEngine::CScriptEngine(bool is_editor)
     m_last_no_file_length = 0;
     *m_last_no_file = 0;
 #ifdef USE_DEBUGGER
-#ifndef USE_LUA_STUDIO
     static_assert(false, "Do not define USE_LUA_STUDIO macro without USE_DEBUGGER macro");
     m_scriptDebugger = nullptr;
     restartDebugger();
-#else
-    m_lua_studio_world = nullptr;
-    m_lua_studio_engine = nullptr;
-#endif
 #endif
     m_is_editor = is_editor;
 }
@@ -849,11 +763,7 @@ CScriptEngine::~CScriptEngine()
     flush_log();
 #endif
 #ifdef USE_DEBUGGER
-#ifndef USE_LUA_STUDIO
     xr_delete(m_scriptDebugger);
-#else
-    disconnect_from_debugger();
-#endif
 #endif
     if (scriptBuffer)
         xr_free(scriptBuffer);
@@ -909,15 +819,10 @@ void CScriptEngine::lua_cast_failed(lua_State* L, const luabind::type_id& info)
 void CScriptEngine::setup_callbacks()
 {
 #ifdef USE_DEBUGGER
-#ifndef USE_LUA_STUDIO
     if (debugger())
         debugger()->PrepareLuaBind();
-#endif
-#endif
-#ifdef USE_DEBUGGER
-#ifndef USE_LUA_STUDIO
+
     if (!debugger() || !debugger()->Active())
-#endif
 #endif
     {
 #if !XRAY_EXCEPTIONS
@@ -976,11 +881,6 @@ void CScriptEngine::setup_auto_load()
 
 void CScriptEngine::init(ExporterFunc exporterFunc, bool loadGlobalNamespace)
 {
-#ifdef USE_LUA_STUDIO
-    bool lua_studio_connected = !!m_lua_studio_world;
-    if (lua_studio_connected)
-        m_lua_studio_world->remove(lua());
-#endif
     reinit();
     luabind::open(lua());
     // XXX: temporary workaround to preserve backwards compatibility with game scripts
@@ -1038,22 +938,11 @@ void CScriptEngine::init(ExporterFunc exporterFunc, bool loadGlobalNamespace)
         luajit::open_lib(lua(), LUA_JITLIBNAME, luaopen_jit);
         RunJITCommand(lua(), "opt.start(2)");
     }
-#ifdef USE_LUA_STUDIO
-    if (m_lua_studio_world || strstr(Core.Params, "-lua_studio"))
-    {
-        if (!lua_studio_connected)
-            try_connect_to_debugger();
-        else
-        {
-            RunJITCommand(lua(), "off()");
-            m_lua_studio_world->add(lua());
-        }
-    }
-#endif
+
     setup_auto_load();
     m_stack_is_ready = true;
 
-#if defined(DEBUG) && !defined(USE_LUA_STUDIO)
+#if defined(DEBUG)
 #if defined(USE_DEBUGGER)
     if (!debugger() || !debugger()->Active())
 #endif
@@ -1162,6 +1051,53 @@ bool CScriptEngine::function_object(LPCSTR function_to_call, luabind::object& ob
     return true;
 }
 
+sol::table CScriptEngine::GetNamespace(pcstr namespaceName)
+{
+    string256 S1;
+    xr_strcpy(S1, namespaceName);
+    LPSTR S = S1;
+
+    sol::state_view view(lua());
+    sol::table lua_namespace = view.globals();
+    for (;;)
+    {
+        if (!xr_strlen(S))
+            return lua_namespace;
+        LPSTR I = strchr(S, '.');
+        if (!I)
+            return lua_namespace[(const char*)S];
+        *I = 0;
+        lua_namespace = lua_namespace[(const char*)S];
+        S = I + 1;
+    }
+}
+
+bool CScriptEngine::GetLuaObject(pcstr funcToCall, sol::object& object, int type)
+{
+    if (!xr_strlen(funcToCall))
+        return false;
+
+    string256 nameSpace, function;
+    parse_script_namespace(funcToCall, nameSpace, sizeof(nameSpace), function, sizeof(function));
+    if (xr_strcmp(nameSpace, GlobalNamespace))
+    {
+        pstr file_name = strchr(nameSpace, '.');
+        if (!file_name)
+            process_file(nameSpace);
+        else
+        {
+            *file_name = 0;
+            process_file(nameSpace);
+            *file_name = '.';
+        }
+    }
+    if (!this->object(nameSpace, function, type))
+        return false;
+    sol::table luaNamespace = GetNamespace(nameSpace);
+    object = luaNamespace[function];
+    return true;
+}
+
 void CScriptEngine::add_script_process(const ScriptProcessor& process_id, CScriptProcess* script_process)
 {
     VERIFY(m_script_processes.find(process_id) == m_script_processes.end());
@@ -1193,7 +1129,7 @@ void CScriptEngine::parse_script_namespace(const char* name, char* ns, u32 nsSiz
     xr_strcpy(func, funcSize, p + 1);
 }
 
-#if defined(USE_DEBUGGER) && !defined(USE_LUA_STUDIO)
+#if defined(USE_DEBUGGER)
 void CScriptEngine::stopDebugger()
 {
     if (debugger())
@@ -1279,11 +1215,6 @@ void CScriptEngine::on_error(lua_State* state)
 {
     CScriptEngine* scriptEngine = GetInstance(state);
     VERIFY(scriptEngine);
-#if defined(USE_DEBUGGER) && defined(USE_LUA_STUDIO)
-    if (!scriptEngine->debugger())
-        return;
-    scriptEngine->debugger()->on_error(state);
-#endif
 }
 
 CScriptProcess* CScriptEngine::CreateScriptProcess(shared_str name, shared_str scripts)
@@ -1309,10 +1240,6 @@ void CScriptEngine::DestroyScriptThread(const CScriptThread* thread)
 #endif
     try
     {
-#if defined(USE_DEBUGGER) && defined(USE_LUA_STUDIO)
-        if (debugger())
-            debugger()->remove(thread->lua());
-#endif
 #ifndef LUABIND_HAS_BUGS_WITH_LUA_THREADS
         luaL_unref(lua(), LUA_REGISTRYINDEX, thread->thread_reference());
 #endif

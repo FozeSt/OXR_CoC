@@ -22,9 +22,7 @@ BOOL CAnimatorCamEffectorScriptCB::Valid()
     BOOL res = inherited::Valid();
     if (!res && cb_name.size())
     {
-        luabind::functor<void> fl;
-        R_ASSERT(GEnv.ScriptEngine->functor<void>(cb_name.c_str(), fl));
-        fl();
+        GEnv.ScriptEngine->CallLuaFunction<void>(DEBUG_INFO, cb_name.c_str());
         cb_name = "";
     }
     return res;

@@ -141,14 +141,6 @@
     <ClInclude Include="BindingsDumper.hpp" />
     <ClInclude Include="DebugMacros.hpp" />
     <ClInclude Include="Functor.hpp" />
-    <ClInclude Include="LuaStudio\Backend\Backend.hpp" />
-    <ClInclude Include="LuaStudio\Backend\Engine.hpp" />
-    <ClInclude Include="LuaStudio\Backend\Interfaces.hpp" />
-    <ClInclude Include="LuaStudio\Backend\LibraryLinkage.hpp" />
-    <ClInclude Include="LuaStudio\Backend\World.hpp" />
-    <ClInclude Include="LuaStudio\Config.hpp" />
-    <ClInclude Include="LuaStudio\Defines.hpp" />
-    <ClInclude Include="LuaStudio\LuaStudio.hpp" />
     <ClInclude Include="mslotutils.h" />
     <ClInclude Include="pch.hpp" />
     <ClInclude Include="ScriptEngineConfig.hpp" />
@@ -170,7 +162,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BindingsDumper.cpp" />
-    <ClCompile Include="LuaStudio\LuaStudio.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

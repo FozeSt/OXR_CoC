@@ -18,8 +18,7 @@
 struct lua_State;
 
 #ifndef MASTER_GOLD
-#define USE_DEBUGGER
-#define USE_LUA_STUDIO
+//#define USE_DEBUGGER
 #endif
 
 #include "xrCore/Containers/AssociativeVector.hpp"
@@ -31,20 +30,10 @@ class CScriptThread;
 struct lua_State;
 struct lua_Debug;
 
+/*
 #ifdef USE_DEBUGGER
-#ifndef USE_LUA_STUDIO
 class CScriptDebugger;
-#else
-namespace cs
-{
-namespace lua_studio
-{
-struct world;
-}
-}
-class lua_studio_engine;
-#endif
-#endif
+#endif*/
 
 enum class ScriptProcessor : u32
 {
@@ -95,12 +84,7 @@ protected:
     CMemoryWriter m_output; // for call stack
 
 #ifdef USE_DEBUGGER
-#ifndef USE_LUA_STUDIO
     CScriptDebugger* m_scriptDebugger;
-#else
-    cs::lua_studio::world* m_lua_studio_world;
-    lua_studio_engine* m_lua_studio_engine;
-#endif
 #endif
 
 public:
@@ -180,18 +164,19 @@ public:
     void parse_script_namespace(const char* name, char* ns, u32 nsSize, char* func, u32 funcSize);
     template <typename TResult>
     IC bool functor(LPCSTR function_to_call, luabind::functor<TResult>& lua_function);
+
+    sol::table GetNamespace(pcstr namespaceName);
+    bool GetLuaObject(pcstr funcToCall, sol::object& object, int type = LUA_TFUNCTION);
+
+    template <typename TResult>
+    bool InitFunctor(pcstr funcToCall, sol::functor<TResult>& luaFunc);
+    template <typename TResult, typename... Args>
+    IC TResult CallLuaFunction(const ErrorLocation& loc, pcstr funcName, Args&&... args);
+
 #ifdef USE_DEBUGGER
-#ifndef USE_LUA_STUDIO
     void stopDebugger();
     void restartDebugger();
     CScriptDebugger* debugger() { return m_scriptDebugger; }
-#else
-    void try_connect_to_debugger();
-    void disconnect_from_debugger();
-    cs::lua_studio::world* debugger() const { return m_lua_studio_world; }
-    void initialize_lua_studio(lua_State* state, cs::lua_studio::world*& world, lua_studio_engine*& engine);
-    void finalize_lua_studio(lua_State* state, cs::lua_studio::world*& world, lua_studio_engine*& engine);
-#endif
 #endif
     void collect_all_garbage();
 
@@ -210,4 +195,24 @@ IC bool CScriptEngine::functor(LPCSTR function_to_call, luabind::functor<TResult
         return false;
     lua_function = object;
     return true;
+}
+
+template <typename TResult>
+bool CScriptEngine::InitFunctor(pcstr funcToCall, sol::functor<TResult>& luaFunc)
+{
+    sol::object luaObj;
+    if (!GetLuaObject(funcToCall, luaObj))
+        return false;
+    luaFunc = luaObj.as<sol::function>();
+    return true;
+}
+
+template <typename TResult, typename... Args>
+IC TResult CScriptEngine::CallLuaFunction(const ErrorLocation& loc, pcstr funcName, Args&&... args)
+{
+    sol::functor<TResult> func;
+    if (!InitFunctor<TResult>(funcName, func))
+        xrDebug::Fatal(loc, "Cannot call lua function: %s", funcName);
+
+    return func(std::forward<Args>(args)...);
 }

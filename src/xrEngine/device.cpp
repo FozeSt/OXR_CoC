@@ -610,17 +610,17 @@ CRenderDevice* get_device() { return &Device; }
 u32 script_time_global() { return Device.dwTimeGlobal; }
 u32 script_time_global_async() { return Device.TimerAsync_MMT(); }
 
-SCRIPT_EXPORT(Device, (),
+ICF static void DeviceScriptExport(lua_State* luaState)
 {
-    using namespace luabind;
-    module(luaState)
-    [
-        def("time_global", &script_time_global),
-        def("time_global_async", &script_time_global_async),
-        def("device", &get_device),
-        def("is_enough_address_space_available", &is_enough_address_space_available)
-    ];
-});
+    sol::state_view lua(luaState);
+
+    lua.set_function("time_global", &script_time_global);
+    lua.set_function("time_global_async", &script_time_global_async);
+    lua.set_function("device", &get_device);
+    lua.set_function("is_enough_address_space_available", &is_enough_address_space_available);
+}
+
+SCRIPT_EXPORT_FUNC(Device, (), DeviceScriptExport);
 
 CLoadScreenRenderer::CLoadScreenRenderer() : b_registered(false), b_need_user_input(false) {}
 void CLoadScreenRenderer::start(bool b_user_input)

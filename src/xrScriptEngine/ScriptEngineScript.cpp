@@ -33,8 +33,8 @@ void ErrorLog(pcstr caMessage)
         GEnv.ScriptEngine->debugger()->Write(caMessage);
 #endif
 #ifdef DEBUG
-    bool lua_studio_connected = !!GEnv.ScriptEngine->debugger();
-    if (!lua_studio_connected)
+    //bool lua_studio_connected = !!GEnv.ScriptEngine->debugger();
+    //if (!lua_studio_connected)
         R_ASSERT2(0, caMessage);
 #else
     R_ASSERT2(0, caMessage);

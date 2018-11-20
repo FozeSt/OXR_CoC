@@ -2,8 +2,6 @@
 #include "xrEngine/XR_IOConsole.h"
 #include "xrScriptEngine/ScriptExporter.hpp"
 
-using namespace luabind;
-
 CConsole* console() { return Console; }
 int get_console_integer(CConsole* c, LPCSTR cmd)
 {
@@ -25,19 +23,27 @@ void execute_console_command_deferred(CConsole* c, LPCSTR string_to_execute)
     Engine.Event.Defer("KERNEL:console", size_t(xr_strdup(string_to_execute)));
 }
 
-SCRIPT_EXPORT(CConsole, (), {
-    module(luaState)[def("get_console", &console),
+// clang-format off
+ICF static void CConsoleScriptExport(lua_State* luaState)
+{
+    sol::state_view lua(luaState);
 
-        class_<CConsole>("CConsole")
-            .def("execute", &CConsole::Execute)
-            .def("execute_script", &CConsole::ExecuteScript)
-            .def("show", &CConsole::Show)
-            .def("hide", &CConsole::Hide)
+    lua.set_function("get_console", &console);
 
-            .def("get_string", &CConsole::GetString)
-            .def("get_integer", &get_console_integer)
-            .def("get_bool", &get_console_bool)
-            .def("get_float", &get_console_float)
-            .def("get_token", &CConsole::GetToken)
-            .def("execute_deferred", &execute_console_command_deferred)];
-});
+    lua.new_usertype<CConsole>("CConsole",
+        "execute", &CConsole::Execute,
+        "execute_script", &CConsole::ExecuteScript,
+        "show", &CConsole::Show,
+        "hide", &CConsole::Hide,
+
+        "get_string", &CConsole::GetString,
+        "get_integer", &get_console_integer,
+        "get_bool", &get_console_bool,
+        "get_float", &get_console_float,
+        "get_token", &CConsole::GetToken,
+        "execute_deferred", &execute_console_command_deferred
+     );
+}
+
+SCRIPT_EXPORT_FUNC(CConsole, (), CConsoleScriptExport);
+// clang-format on

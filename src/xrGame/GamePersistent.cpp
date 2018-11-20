@@ -882,17 +882,17 @@ void CGamePersistent::LoadTitle(bool change_tip, shared_str map_name)
     {
         string512 buff;
         u8 tip_num;
-        luabind::functor<u8> m_functor;
+        sol::functor<u8> funct;
         bool is_single = !xr_strcmp(m_game_params.m_game_type, "single");
         if (is_single)
         {
-            R_ASSERT(GEnv.ScriptEngine->functor("loadscreen.get_tip_number", m_functor));
-            tip_num = m_functor(map_name.c_str());
+            R_ASSERT(GEnv.ScriptEngine->InitFunctor("loadscreen.get_tip_number", funct));
+            tip_num = funct(map_name.c_str());
         }
         else
         {
-            R_ASSERT(GEnv.ScriptEngine->functor("loadscreen.get_mp_tip_number", m_functor));
-            tip_num = m_functor(map_name.c_str());
+            R_ASSERT(GEnv.ScriptEngine->InitFunctor("loadscreen.get_mp_tip_number", funct));
+            tip_num = funct(map_name.c_str());
         }
         //		tip_num = 83;
         xr_sprintf(buff, "%s%d:", StringTable().translate("ls_tip_number").c_str(), tip_num);

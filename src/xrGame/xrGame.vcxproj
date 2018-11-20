@@ -1251,7 +1251,6 @@
     <ClInclude Include="script_object_action.h" />
     <ClInclude Include="script_object_action_inline.h" />
     <ClInclude Include="script_particles.h" />
-    <ClInclude Include="script_particles_inline.h" />
     <ClInclude Include="script_particle_action.h" />
     <ClInclude Include="script_particle_action_inline.h" />
     <ClInclude Include="script_property_evaluator_wrapper.h" />

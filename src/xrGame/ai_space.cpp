@@ -86,13 +86,7 @@ void CAI_Space::RegisterScriptClasses()
     for (u32 i = 0; i < registratorCount; i++)
     {
         _GetItem(*registrators, i, I);
-        luabind::functor<void> result;
-        if (!GEnv.ScriptEngine->functor(I, result))
-        {
-            GEnv.ScriptEngine->script_log(LuaMessageType::Error, "Cannot load class registrator %s!", I);
-            continue;
-        }
-        result(const_cast<CObjectFactory*>(&object_factory()));
+        GEnv.ScriptEngine->CallLuaFunction<void>(DEBUG_INFO, I, const_cast<CObjectFactory*>(&object_factory()));
     }
 #endif
 }

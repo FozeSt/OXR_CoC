@@ -29,3 +29,6 @@ extern "C" {
 #include <luabind/iterator_policy.hpp>
 
 #pragma warning(pop)
+
+#define SOL_CHECK_ARGUMENTS 1
+#include "sol2/sol.hpp"

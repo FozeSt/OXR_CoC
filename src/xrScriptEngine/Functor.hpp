@@ -74,3 +74,19 @@ struct default_converter<const functor<T>&> : default_converter<functor<T>>
 {
 };
 }
+
+namespace sol
+{
+template <typename TResult>
+class functor : public function
+{
+public:
+    functor() : function() {}
+    functor(const function& obj) : function(obj) {}
+    template <typename... Args>
+    TResult operator()(Args&&... args) const
+    {
+        return call<TResult>(std::forward<Args>(args)...);
+    }
+};
+}

@@ -736,11 +736,7 @@ void CActorCondition::UpdateTutorialThresholds()
     }
 
     if (!b)
-    {
-        luabind::functor<void> fl;
-        R_ASSERT(GEnv.ScriptEngine->functor<void>(cb_name, fl));
-        fl();
-    }
+        GEnv.ScriptEngine->CallLuaFunction<void>(DEBUG_INFO, cb_name);
 }
 
 bool CActorCondition::DisableSprint(SHit* pHDS)

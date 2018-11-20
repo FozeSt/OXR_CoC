@@ -4584,9 +4584,6 @@
     <ClInclude Include="script_particles.h">
       <Filter>ScriptClasses\ScriptParticles</Filter>
     </ClInclude>
-    <ClInclude Include="script_particles_inline.h">
-      <Filter>ScriptClasses\ScriptParticles</Filter>
-    </ClInclude>
     <ClInclude Include="script_sound.h">
       <Filter>ScriptClasses\ScriptSound</Filter>
     </ClInclude>
@@ -6467,6 +6464,7 @@
     <ClInclude Include="AnselManager.h">
       <Filter>Core\Client\Ansel</Filter>
     </ClInclude>
+    <ClInclude Include="ui\UILoadingScreenHardcoded.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="damage_manager.cpp">
@@ -9794,9 +9792,6 @@
     </ClCompile>
     <ClCompile Include="WeaponScript.cpp">
       <Filter>Core\Client\Objects\items &amp; weapons\Weapons\WeaponScript</Filter>
-    </ClCompile>
-    <ClCompile Include="ui\UILoadingScreenHardcoded.h">
-      <Filter>UI\Common\LoadingScreen</Filter>
     </ClCompile>
     <ClCompile Include="ui\UISleepStatic.cpp">
       <Filter>UI\UIWindows\Static</Filter>

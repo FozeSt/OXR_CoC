@@ -10,44 +10,60 @@
 #include "ai_sounds.h"
 #include "xrScriptEngine/ScriptExporter.hpp"
 
-using namespace luabind;
+// clang-format off
+ICF static void CScriptSoundTypeScriptExport(lua_State* luaState)
+{
+    sol::state_view lua(luaState);
 
-SCRIPT_EXPORT(CScriptSoundType, (), {
-    class CScriptSoundType
-    {
-    };
-    module(luaState)
-        [class_<CScriptSoundType>("snd_type")
-                .enum_("sound_types")[value("no_sound", int(SOUND_TYPE_NO_SOUND)),
-                    value("weapon", int(SOUND_TYPE_WEAPON)), value("item", int(SOUND_TYPE_ITEM)),
-                    value("monster", int(SOUND_TYPE_MONSTER)), value("anomaly", int(SOUND_TYPE_ANOMALY)),
-                    value("world", int(SOUND_TYPE_WORLD)), value("pick_up", int(SOUND_TYPE_PICKING_UP)),
-                    value("drop", int(SOUND_TYPE_DROPPING)), value("hide", int(SOUND_TYPE_HIDING)),
-                    value("take", int(SOUND_TYPE_TAKING)), value("use", int(SOUND_TYPE_USING)),
-                    value("shoot", int(SOUND_TYPE_SHOOTING)), value("empty", int(SOUND_TYPE_EMPTY_CLICKING)),
-                    value("bullet_hit", int(SOUND_TYPE_BULLET_HIT)), value("reload", int(SOUND_TYPE_RECHARGING)),
-                    value("die", int(SOUND_TYPE_DYING)), value("injure", int(SOUND_TYPE_INJURING)),
-                    value("step", int(SOUND_TYPE_STEP)), value("talk", int(SOUND_TYPE_TALKING)),
-                    value("attack", int(SOUND_TYPE_ATTACKING)), value("eat", int(SOUND_TYPE_EATING)),
-                    value("idle", int(SOUND_TYPE_IDLE)), value("object_break", int(SOUND_TYPE_OBJECT_BREAKING)),
-                    value("object_collide", int(SOUND_TYPE_OBJECT_COLLIDING)),
-                    value("object_explode", int(SOUND_TYPE_OBJECT_EXPLODING)),
-                    value("ambient", int(SOUND_TYPE_AMBIENT)), value("item_pick_up", int(SOUND_TYPE_ITEM_PICKING_UP)),
-                    value("item_drop", int(SOUND_TYPE_ITEM_DROPPING)), value("item_hide", int(SOUND_TYPE_ITEM_HIDING)),
-                    value("item_take", int(SOUND_TYPE_ITEM_TAKING)), value("item_use", int(SOUND_TYPE_ITEM_USING)),
-                    value("weapon_shoot", int(SOUND_TYPE_WEAPON_SHOOTING)),
-                    value("weapon_empty", int(SOUND_TYPE_WEAPON_EMPTY_CLICKING)),
-                    value("weapon_bullet_hit", int(SOUND_TYPE_WEAPON_BULLET_HIT)),
-                    value("weapon_reload", int(SOUND_TYPE_WEAPON_RECHARGING)),
-                    value("monster_die", int(SOUND_TYPE_MONSTER_DYING)),
-                    value("monster_injure", int(SOUND_TYPE_MONSTER_INJURING)),
-                    value("monster_step", int(SOUND_TYPE_MONSTER_STEP)),
-                    value("monster_talk", int(SOUND_TYPE_MONSTER_TALKING)),
-                    value("monster_attack", int(SOUND_TYPE_MONSTER_ATTACKING)),
-                    value("monster_eat", int(SOUND_TYPE_MONSTER_EATING)),
-                    value("anomaly_idle", int(SOUND_TYPE_ANOMALY_IDLE)),
-                    value("world_object_break", int(SOUND_TYPE_WORLD_OBJECT_BREAKING)),
-                    value("world_object_collide", int(SOUND_TYPE_WORLD_OBJECT_COLLIDING)),
-                    value("world_object_explode", int(SOUND_TYPE_WORLD_OBJECT_EXPLODING)),
-                    value("world_ambient", int(SOUND_TYPE_WORLD_AMBIENT))]];
-});
+    lua.new_enum("snd_type",
+        "no_sound", int(SOUND_TYPE_NO_SOUND),
+        "weapon", int(SOUND_TYPE_WEAPON),
+        "item", int(SOUND_TYPE_ITEM),
+        "monster", int(SOUND_TYPE_MONSTER),
+        "anomaly", int(SOUND_TYPE_ANOMALY),
+        "world", int(SOUND_TYPE_WORLD),
+        "pick_up", int(SOUND_TYPE_PICKING_UP),
+        "drop", int(SOUND_TYPE_DROPPING),
+        "hide", int(SOUND_TYPE_HIDING),
+        "take", int(SOUND_TYPE_TAKING),
+        "use", int(SOUND_TYPE_USING),
+        "shoot", int(SOUND_TYPE_SHOOTING),
+        "empty", int(SOUND_TYPE_EMPTY_CLICKING),
+        "bullet_hit", int(SOUND_TYPE_BULLET_HIT),
+        "reload", int(SOUND_TYPE_RECHARGING),
+        "die", int(SOUND_TYPE_DYING),
+        "injure", int(SOUND_TYPE_INJURING),
+        "step", int(SOUND_TYPE_STEP),
+        "talk", int(SOUND_TYPE_TALKING),
+        "attack", int(SOUND_TYPE_ATTACKING),
+        "eat", int(SOUND_TYPE_EATING),
+        "idle", int(SOUND_TYPE_IDLE),
+        "object_break", int(SOUND_TYPE_OBJECT_BREAKING),
+        "object_collide", int(SOUND_TYPE_OBJECT_COLLIDING),
+        "object_explode", int(SOUND_TYPE_OBJECT_EXPLODING),
+        "ambient", int(SOUND_TYPE_AMBIENT),
+        "item_pick_up", int(SOUND_TYPE_ITEM_PICKING_UP),
+        "item_drop", int(SOUND_TYPE_ITEM_DROPPING),
+        "item_hide", int(SOUND_TYPE_ITEM_HIDING),
+        "item_take", int(SOUND_TYPE_ITEM_TAKING),
+        "item_use", int(SOUND_TYPE_ITEM_USING),
+        "weapon_shoot", int(SOUND_TYPE_WEAPON_SHOOTING),
+        "weapon_empty", int(SOUND_TYPE_WEAPON_EMPTY_CLICKING),
+        "weapon_bullet_hit", int(SOUND_TYPE_WEAPON_BULLET_HIT),
+        "weapon_reload", int(SOUND_TYPE_WEAPON_RECHARGING),
+        "monster_die", int(SOUND_TYPE_MONSTER_DYING),
+        "monster_injure", int(SOUND_TYPE_MONSTER_INJURING),
+        "monster_step", int(SOUND_TYPE_MONSTER_STEP),
+        "monster_talk", int(SOUND_TYPE_MONSTER_TALKING),
+        "monster_attack", int(SOUND_TYPE_MONSTER_ATTACKING),
+        "monster_eat", int(SOUND_TYPE_MONSTER_EATING),
+        "anomaly_idle", int(SOUND_TYPE_ANOMALY_IDLE),
+        "world_object_break", int(SOUND_TYPE_WORLD_OBJECT_BREAKING),
+        "world_object_collide", int(SOUND_TYPE_WORLD_OBJECT_COLLIDING),
+        "world_object_explode", int(SOUND_TYPE_WORLD_OBJECT_EXPLODING),
+        "world_ambient", int(SOUND_TYPE_WORLD_AMBIENT)
+    );
+}
+
+SCRIPT_EXPORT_FUNC(CScriptSoundType, (), CScriptSoundTypeScriptExport);
+// clang-format on

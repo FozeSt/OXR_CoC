@@ -21,29 +21,36 @@ LPCSTR r_stringZ(IReader* self)
 
 bool r_bool(IReader* self) { return (!!self->r_u8()); }
 void r_fvector3(IReader* self, Fvector* arg0) { self->r_fvector3(*arg0); }
-SCRIPT_EXPORT(IReader, (), {
-    module(luaState)[class_<IReader>(
-        "reader").def("r_seek", &IReader::seek)
-                         .def("r_tell", &IReader::tell)
-                         .def("r_vec3", &::r_fvector3)
-                         .def("r_bool", &::r_bool)
-                         .def("r_float", &IReader::r_float)
-                         .def("r_u64", &IReader::r_u64)
-                         .def("r_s64", &IReader::r_s64)
-                         .def("r_u32", &IReader::r_u32)
-                         .def("r_s32", &IReader::r_s32)
-                         .def("r_u16", &IReader::r_u16)
-                         .def("r_s16", &IReader::r_s16)
-                         .def("r_u8", &IReader::r_u8)
-                         .def("r_s8", &IReader::r_s8)
-                         .def("r_float_q16", &IReader::r_float_q16)
-                         .def("r_float_q8", &IReader::r_float_q8)
-                         .def("r_angle16", &IReader::r_angle16)
-                         .def("r_angle8", &IReader::r_angle8)
-                         .def("r_dir", &IReader::r_dir)
-                         .def("r_sdir", &IReader::r_sdir)
-                         .def("r_stringZ", &r_stringZ)
-                         .def("r_elapsed", &IReader::elapsed)
-                         .def("r_advance", &IReader::advance)
-                         .def("r_eof", &r_eof)];
-});
+
+ICF static void IReaderScriptExport(lua_State* luaState)
+{
+    sol::state_view lua(luaState);
+
+    lua.new_usertype<IReader>("reader",
+        "r_seek", &IReader::seek,
+        "r_tell", &IReader::tell,
+        "r_vec3", &::r_fvector3,
+        "r_bool", &::r_bool,
+        "r_float", &IReader::r_float,
+        "r_u64", &IReader::r_u64,
+        "r_s64", &IReader::r_s64,
+        "r_u32", &IReader::r_u32,
+        "r_s32", &IReader::r_s32,
+        "r_u16", &IReader::r_u16,
+        "r_s16", &IReader::r_s16,
+        "r_u8", &IReader::r_u8,
+        "r_s8", &IReader::r_s8,
+        "r_float_q16", &IReader::r_float_q16,
+        "r_float_q8", &IReader::r_float_q8,
+        "r_angle16", &IReader::r_angle16,
+        "r_angle8", &IReader::r_angle8,
+        "r_dir", &IReader::r_dir,
+        "r_sdir", &IReader::r_sdir,
+        "r_stringZ", &r_stringZ,
+        "r_elapsed", &IReader::elapsed,
+        "r_advance", &IReader::advance,
+        "r_eof", &r_eof
+     );
+}
+
+SCRIPT_EXPORT_FUNC(IReader, (), IReaderScriptExport);

@@ -10,11 +10,11 @@
 
 struct SLuaWpnParams
 {
-    luabind::functor<float> m_functorRPM;
-    luabind::functor<float> m_functorAccuracy;
-    luabind::functor<float> m_functorDamage;
-    luabind::functor<float> m_functorDamageMP;
-    luabind::functor<float> m_functorHandling;
+    sol::functor<float> m_functorRPM;
+    sol::functor<float> m_functorAccuracy;
+    sol::functor<float> m_functorDamage;
+    sol::functor<float> m_functorDamageMP;
+    sol::functor<float> m_functorHandling;
 
     SLuaWpnParams();
     ~SLuaWpnParams();
@@ -24,17 +24,11 @@ static SLuaWpnParams* g_lua_wpn_params = nullptr;
 
 SLuaWpnParams::SLuaWpnParams()
 {
-    bool functor_exists;
-    functor_exists = GEnv.ScriptEngine->functor("ui_wpn_params.GetRPM", m_functorRPM);
-    VERIFY(functor_exists);
-    functor_exists = GEnv.ScriptEngine->functor("ui_wpn_params.GetDamage", m_functorDamage);
-    VERIFY(functor_exists);
-    functor_exists = GEnv.ScriptEngine->functor("ui_wpn_params.GetDamageMP", m_functorDamageMP);
-    VERIFY(functor_exists);
-    functor_exists = GEnv.ScriptEngine->functor("ui_wpn_params.GetHandling", m_functorHandling);
-    VERIFY(functor_exists);
-    functor_exists = GEnv.ScriptEngine->functor("ui_wpn_params.GetAccuracy", m_functorAccuracy);
-    VERIFY(functor_exists);
+    VERIFY(GEnv.ScriptEngine->InitFunctor("ui_wpn_params.GetRPM", m_functorRPM));
+    VERIFY(GEnv.ScriptEngine->InitFunctor("ui_wpn_params.GetDamage", m_functorDamage));
+    VERIFY(GEnv.ScriptEngine->InitFunctor("ui_wpn_params.GetDamageMP", m_functorDamageMP));
+    VERIFY(GEnv.ScriptEngine->InitFunctor("ui_wpn_params.GetHandling", m_functorHandling));
+    VERIFY(GEnv.ScriptEngine->InitFunctor("ui_wpn_params.GetAccuracy", m_functorAccuracy));
 }
 
 SLuaWpnParams::~SLuaWpnParams() {}
@@ -127,13 +121,18 @@ void CUIWpnParams::SetInfo(CInventoryItem* slot_wpn, CInventoryItem& cur_wpn)
     string2048 str_upgrades;
     str_upgrades[0] = 0;
     cur_wpn.get_upgrades_str(str_upgrades);
+    pcstr upgradesStr = str_upgrades;
 
-    float cur_rpm = iFloor(g_lua_wpn_params->m_functorRPM(cur_section, str_upgrades) * 53.0f) / 53.0f;
-    float cur_accur = iFloor(g_lua_wpn_params->m_functorAccuracy(cur_section, str_upgrades) * 53.0f) / 53.0f;
-    float cur_hand = iFloor(g_lua_wpn_params->m_functorHandling(cur_section, str_upgrades) * 53.0f) / 53.0f;
-    float cur_damage = (GameID() == eGameIDSingle) ?
-        iFloor(g_lua_wpn_params->m_functorDamage(cur_section, str_upgrades) * 53.0f) / 53.0f :
-        iFloor(g_lua_wpn_params->m_functorDamageMP(cur_section, str_upgrades) * 53.0f) / 53.0f;
+    float funcRpm = g_lua_wpn_params->m_functorRPM(cur_section, upgradesStr);
+    float funcAccur = g_lua_wpn_params->m_functorAccuracy(cur_section, upgradesStr);
+    float funcHand = g_lua_wpn_params->m_functorHandling(cur_section, upgradesStr);
+    float funcDamage = (GameID() == eGameIDSingle) ? g_lua_wpn_params->m_functorAccuracy(cur_section, upgradesStr) :
+        g_lua_wpn_params->m_functorDamageMP(cur_section, upgradesStr);
+
+    float cur_rpm = iFloor(funcRpm * 53.0f) / 53.0f;
+    float cur_accur = iFloor(funcAccur * 53.0f) / 53.0f;
+    float cur_hand = iFloor(funcHand * 53.0f) / 53.0f;
+    float cur_damage = iFloor(funcDamage * 53.0f) / 53.0f;
 
     float slot_rpm = cur_rpm;
     float slot_accur = cur_accur;
@@ -146,12 +145,16 @@ void CUIWpnParams::SetInfo(CInventoryItem* slot_wpn, CInventoryItem& cur_wpn)
         str_upgrades[0] = 0;
         slot_wpn->get_upgrades_str(str_upgrades);
 
-        slot_rpm = iFloor(g_lua_wpn_params->m_functorRPM(slot_section, str_upgrades) * 53.0f) / 53.0f;
-        slot_accur = iFloor(g_lua_wpn_params->m_functorAccuracy(slot_section, str_upgrades) * 53.0f) / 53.0f;
-        slot_hand = iFloor(g_lua_wpn_params->m_functorHandling(slot_section, str_upgrades) * 53.0f) / 53.0f;
-        slot_damage = (GameID() == eGameIDSingle) ?
-            iFloor(g_lua_wpn_params->m_functorDamage(slot_section, str_upgrades) * 53.0f) / 53.0f :
-            iFloor(g_lua_wpn_params->m_functorDamageMP(slot_section, str_upgrades) * 53.0f) / 53.0f;
+        funcRpm = g_lua_wpn_params->m_functorRPM(slot_section, upgradesStr);
+        funcAccur = g_lua_wpn_params->m_functorAccuracy(slot_section, upgradesStr);
+        funcHand = g_lua_wpn_params->m_functorHandling(slot_section, upgradesStr);
+        funcDamage = (GameID() == eGameIDSingle) ? g_lua_wpn_params->m_functorAccuracy(slot_section, upgradesStr) :
+            g_lua_wpn_params->m_functorDamageMP(slot_section, upgradesStr);
+
+        slot_rpm = iFloor(funcRpm * 53.0f) / 53.0f;
+        slot_accur = iFloor(funcAccur * 53.0f) / 53.0f;
+        slot_hand = iFloor(funcHand * 53.0f) / 53.0f;
+        slot_damage = iFloor(funcDamage * 53.0f) / 53.0f;
     }
 
     m_progressAccuracy.SetTwoPos(cur_accur, slot_accur);
